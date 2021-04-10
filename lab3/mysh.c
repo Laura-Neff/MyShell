@@ -59,7 +59,7 @@ int main( int argc, char *argv[] )
 
         char * result = fgets(linebuf, MYSH_LINE, stdin); //reads one line from input
         //fgets returns 0 when it's at the end of a file or there was an error
-        //fgets(string being read, max number of characters to be read, file stream that identifies where characters are read from)
+        //fgets(string being read and stored (linebuf is being stored from stdin, max number of characters to be read, file stream that identifies where characters are read from)
 
         if(!result){
             fprintf(stdout, "Read line: %s", linebuf);
