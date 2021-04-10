@@ -17,17 +17,60 @@
 #include "tokens.h" //custom tokenizer made for the class
 
 
+
+#define MYSH_LINE 1024
+
+
+
+typedef struct CmdSet {
+    struct Cmd ** commands;
+    char** flags;
+
+} cmdset;
+
+ typedef struct Cmd {
+    char** argv;
+    char* inputFile;
+    char* outputFile;
+
+
+} cmd;
+
+
+
 int main( int argc, char *argv[] )
 {
     while(1) {
         // commands = getCmd();
-        // foreach command in commands: create succeeding pipefor I/O*
+        // foreach command in commands: create succeeding pipe for I/O*
         // create child processopen files for I/O*
         // redirect stdin from file or preceding pipe*
         // redirect stdoutto file or succeeding*
         // execute command in child
         // track childpid in parent
         // parent waits for foreground children*
+
+        fprintf(stdout, "Here lies my hopes and dreams: ");
+
+        char *linebuf = malloc(sizeof(char) * (MYSH_LINE));
+        if(!linebuf) {
+            fprintf(stderr, "Out of memory\n");
+        }
+
+        char * result = fgets(linebuf, MYSH_LINE, stdin); //reads one line from input
+        //fgets returns 0 when it's at the end of a file or there was an error
+        //fgets(string being read, max number of characters to be read, file stream that identifies where characters are read from)
+
+        if(!result){
+            fprintf(stdout, "Read line: %s", linebuf);
+            return 0;
+        }
+
+        free(linebuf);
+
+
+
+
     }
 
 };
