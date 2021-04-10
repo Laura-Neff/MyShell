@@ -66,6 +66,19 @@ int main( int argc, char *argv[] )
             return 0;
         }
 
+
+
+       char** breakup = get_tokens(linebuf);
+
+        for(int a=0; a < sizeof(breakup); a++){
+            fprintf(stdout, "Read line: %s", breakup[a]);
+        }
+
+        
+    
+
+
+
         free(linebuf);
 
 
