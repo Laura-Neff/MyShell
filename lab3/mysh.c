@@ -70,11 +70,13 @@ int main( int argc, char *argv[] )
 
        char** breakup = get_tokens(linebuf);
 
-        for(int a=0; a < sizeof(breakup); a++){
-            fprintf(stdout, "Read line: %s", breakup[a]);
+       int num_tokens = sizeof(breakup)/sizeof(breakup[0]);
+
+        for(int a=0; a < num_tokens; a++){
+            fprintf(stdout, "My tokens: %s", breakup[a]);
         }
 
-        
+
     
 
 
