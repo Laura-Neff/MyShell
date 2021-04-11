@@ -70,7 +70,7 @@ int main( int argc, char *argv[] )
 
        char** breakup = get_tokens(linebuf);
 
-       int num_tokens = sizeof(breakup)/sizeof(breakup[0]);
+    //    int num_tokens_minus_1 = sizeof(breakup)/sizeof(breakup[0]) - 1;
 
         // for(int a=0; a < num_tokens; a++){
         //     fprintf(stdout, "My tokens: %s", breakup[a]);
@@ -79,9 +79,20 @@ int main( int argc, char *argv[] )
         for( int i=0; breakup[i]; i++ ) {
             fprintf(stdout, "My tokens: %s\n", breakup[i]);
             if(strcmp(breakup[i], "&") == 0) {
-                fprintf(stdout, " Place commands into the background: after invoking the specified commands.\
-                ‘&’ may only be specified as the final command line argument. %s\n", breakup[i]);
+                if(breakup[i+1] != NULL) {
+                    fprintf(stdout, "This is not the final command line argument, you bozo.\n");
+                }
+                else {
+                    fprintf(stdout, "Place commands into the background: after invoking the specified commands.‘&’ may only be specified as the final command line argument. %s\n", breakup[i]);
+                }
             }
+                if(strcmp(breakup[i], "<") == 0) {
+                    fprintf(stdout, "Redirect the current command’s standard input stream from the file named immediately after the ‘<’ operator.\n");
+                    fprintf(stdout, "%s is our new input stream\n", breakup[i+1]);
+
+
+                }
+
         }
 
 
