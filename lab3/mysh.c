@@ -90,6 +90,20 @@ int main( int argc, char *argv[] )
                     fprintf(stdout, "Redirect the current command’s standard input stream from the file named immediately after the ‘<’ operator.\n");
                     fprintf(stdout, "%s is our new input stream\n", breakup[i+1]);
 
+                }
+                if(strcmp(breakup[i], ">") == 0) {
+                    fprintf(stdout, "Redirect the current command’s standard output stream to the file named immediately after the ‘>’ operator.\n");
+                    fprintf(stdout, "%s is our new output stream\n", breakup[i+1]);
+                }
+                if(strcmp(breakup[i], ">>") == 0) {
+                    fprintf(stdout, "Redirect the current command’s standard output stream to the file named immediately after the ‘>>’ operator. Append to the file if it already exists.\n");
+                    fprintf(stdout, "%s is our new SPECIAL output stream\n", breakup[i+1]);
+                }
+                if(strcmp(breakup[i], "|") == 0) {
+                    fprintf(stdout, "Redirect the current command’s standard output stream to the standard input stream of the succeeding command. There may be any number of pipe-connected processes..\n");
+                    fprintf(stdout, "%s is the first command's output stream to be used for the standard input stream of the succeeding command\n", breakup[i-1]);
+                    fprintf(stdout, "%s is our command that will be using the other command's output as an input\n", breakup[i+1]);
+
 
                 }
 
