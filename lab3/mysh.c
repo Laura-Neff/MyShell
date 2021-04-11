@@ -96,7 +96,7 @@ int main( int argc, char *argv[] )
                     fprintf(stdout, "Place commands into the background: after invoking the specified commands.‘&’ may only be specified as the final command line argument. %s\n", breakup[i]);
                 }
             }
-                if(strcmp(breakup[i], "<") == 0) {
+             else if(strcmp(breakup[i], "<") == 0) {
                     fprintf(stdout, "Redirect the current command’s standard input stream from the file named immediately after the ‘<’ operator.\n");
                     fprintf(stdout, "%s is our new input stream\n", breakup[i+1]);
                     command->inputFile = breakup[i+1];
@@ -106,7 +106,7 @@ int main( int argc, char *argv[] )
                     // fclose(inputStream);
 
                 }
-                if(strcmp(breakup[i], ">") == 0) {
+            else if(strcmp(breakup[i], ">") == 0) {
                     fprintf(stdout, "Redirect the current command’s standard output stream to the file named immediately after the ‘>’ operator.\n");
                     fprintf(stdout, "%s is our new output stream\n", breakup[i+1]);
                     command->outputFile = breakup[i+1];
@@ -115,14 +115,14 @@ int main( int argc, char *argv[] )
                     // fgetc(inputStream);
                     // fclose(inputStream);
                 }
-                if(strcmp(breakup[i], ">>") == 0) {
+            else if(strcmp(breakup[i], ">>") == 0) {
                     fprintf(stdout, "Redirect the current command’s standard output stream to the file named immediately after the ‘>>’ operator. Append to the file if it already exists.\n");
                     fprintf(stdout, "%s is our new SPECIAL output stream\n", breakup[i+1]);
                     command->inputFile = breakup[i+1];
                     command->appendOut = 1;
 
                 }
-                if(strcmp(breakup[i], "|") == 0) {
+            else if(strcmp(breakup[i], "|") == 0) {
                     fprintf(stdout, "Redirect the current command’s standard output stream to the standard input stream of the succeeding command. There may be any number of pipe-connected processes..\n");
                     fprintf(stdout, "%s is the first command's output stream to be used for the standard input stream of the succeeding command\n", breakup[i-1]);
                     fprintf(stdout, "%s is our command that will be using the other command's output as an input\n", breakup[i+1]);
@@ -137,7 +137,17 @@ int main( int argc, char *argv[] )
                     command = command2;
                     commandSet->commands[commandSet->numCmds] = NULL;
 
-
+            } else {
+                    fprintf(stdout, "Plain and boring command.\n");
+                    if(command->numArgs == 0) {
+                        command->arguments[0] = breakup[i];
+                        command->numArgs++;
+                    } else {
+                        command->numArgs++;
+                        command->arguments = (char**) realloc(command->arguments, sizeof(char**) * (command->numArgs+1));
+                        command->arguments[command->numArgs - 1] = breakup[i];
+                        command->arguments[command->numArgs] = NULL;
+                     }
 
 
                 }
