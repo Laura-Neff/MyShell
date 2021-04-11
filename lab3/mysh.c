@@ -24,17 +24,22 @@
 
 typedef struct CmdSet {
     struct Cmd ** commands;
-    char** flags;
+    int flag;
+    int numCmds;
 
-} cmdset;
+} * cmdset;
 
  typedef struct Cmd {
-    char** argv;
+    char** arguments;
     char* inputFile;
     char* outputFile;
+    int numArgs;
+    int appendOut;
+    int pipeInput;
+    int pipeOutput;
 
 
-} cmd;
+} * cmd;
 
 
 
@@ -43,7 +48,7 @@ int main( int argc, char *argv[] )
     while(1) {
         // commands = getCmd();
         // foreach command in commands: create succeeding pipe for I/O*
-        // create child processopen files for I/O*
+        // create child process open files for I/O*
         // redirect stdin from file or preceding pipe*
         // redirect stdoutto file or succeeding*
         // execute command in child
@@ -67,14 +72,19 @@ int main( int argc, char *argv[] )
         }
 
 
+        cmdset commandSet = calloc(1, sizeof(struct CmdSet));
+        commandSet->numCmds = 1;
+        commandSet->commands = calloc(1, sizeof(char*) * (commandSet->numCmds + 1));
+        cmd command = calloc(1, sizeof(struct Cmd));
+        command->arguments = calloc(1, sizeof(char **));
+        commandSet->commands[0] = command;
+        commandSet->commands[1] = NULL;
+        
+
 
        char** breakup = get_tokens(linebuf);
 
-    //    int num_tokens_minus_1 = sizeof(breakup)/sizeof(breakup[0]) - 1;
-
-        // for(int a=0; a < num_tokens; a++){
-        //     fprintf(stdout, "My tokens: %s", breakup[a]);
-        // }
+   
 
         for( int i=0; breakup[i]; i++ ) {
             fprintf(stdout, "My tokens: %s\n", breakup[i]);
@@ -89,20 +99,45 @@ int main( int argc, char *argv[] )
                 if(strcmp(breakup[i], "<") == 0) {
                     fprintf(stdout, "Redirect the current command’s standard input stream from the file named immediately after the ‘<’ operator.\n");
                     fprintf(stdout, "%s is our new input stream\n", breakup[i+1]);
+                    command->inputFile = breakup[i+1];
+
+                    // FILE * inputStream = fopen(breakup[i+1], "r");
+                    // fgetc(inputStream);
+                    // fclose(inputStream);
 
                 }
                 if(strcmp(breakup[i], ">") == 0) {
                     fprintf(stdout, "Redirect the current command’s standard output stream to the file named immediately after the ‘>’ operator.\n");
                     fprintf(stdout, "%s is our new output stream\n", breakup[i+1]);
+                    command->outputFile = breakup[i+1];
+
+                    // FILE * inputStream = fopen(breakup[i+1], "w");
+                    // fgetc(inputStream);
+                    // fclose(inputStream);
                 }
                 if(strcmp(breakup[i], ">>") == 0) {
                     fprintf(stdout, "Redirect the current command’s standard output stream to the file named immediately after the ‘>>’ operator. Append to the file if it already exists.\n");
                     fprintf(stdout, "%s is our new SPECIAL output stream\n", breakup[i+1]);
+                    command->inputFile = breakup[i+1];
+                    command->appendOut = 1;
+
                 }
                 if(strcmp(breakup[i], "|") == 0) {
                     fprintf(stdout, "Redirect the current command’s standard output stream to the standard input stream of the succeeding command. There may be any number of pipe-connected processes..\n");
                     fprintf(stdout, "%s is the first command's output stream to be used for the standard input stream of the succeeding command\n", breakup[i-1]);
                     fprintf(stdout, "%s is our command that will be using the other command's output as an input\n", breakup[i+1]);
+
+                    commandSet->numCmds++;
+                    commandSet->commands = realloc(commandSet->commands, sizeof(char*) * commandSet->numCmds + 1);
+                    command->pipeOutput = 1;
+                    cmd command2 = calloc(1, sizeof(struct Cmd));
+                    command2->pipeInput = 1;
+                    command2->arguments = calloc(1, sizeof(char **) * 2);
+                    commandSet->commands[commandSet->numCmds - 1] = command2;
+                    command = command2;
+                    commandSet->commands[commandSet->numCmds] = NULL;
+
+
 
 
                 }
