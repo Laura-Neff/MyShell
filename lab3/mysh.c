@@ -72,12 +72,18 @@ int main( int argc, char *argv[] )
 
        int num_tokens = sizeof(breakup)/sizeof(breakup[0]);
 
-        for(int a=0; a < num_tokens; a++){
-            fprintf(stdout, "My tokens: %s", breakup[a]);
+        // for(int a=0; a < num_tokens; a++){
+        //     fprintf(stdout, "My tokens: %s", breakup[a]);
+        // }
+
+        for( int i=0; breakup[i]; i++ ) {
+            fprintf(stdout, "My tokens: %s\n", breakup[i]);
+            if(strcmp(breakup[i], "&") == 0) {
+                fprintf(stdout, " Place commands into the background: after invoking the specified commands.\
+                ‘&’ may only be specified as the final command line argument. %s\n", breakup[i]);
+            }
         }
 
-
-    
 
 
 
@@ -88,4 +94,4 @@ int main( int argc, char *argv[] )
 
     }
 
-};
+}
