@@ -201,7 +201,7 @@ int main( int argc, char *argv[] )
 
         int status;
         pid_t id = fork();
-        int inputStream;
+        int stream;
         if(id > 0) {
             do {
             pid_t child_process_id = wait(&status); //status will be updated through wait method with what happened to the child after it finished running
@@ -214,18 +214,26 @@ int main( int argc, char *argv[] )
         else if (id == 0){
             // execvp(command->arguments[0], command->arguments);
             if(command->inputFile) {
-                inputStream = open(command->inputFile, O_RDONLY);
-                printf("1st open() returned %d\n,", inputStream);
+                stream = open(command->inputFile, O_RDONLY);
+                printf("1st open() returned %d\n,", stream);
 
-                if(dup2(inputStream,0) != 0) {
+                if(dup2(stream,0) != 0) {
                     fprintf(stderr, "Error.");
                     exit(1);
                 }
-                printf("close(%d) ...\n", inputStream);
+                // printf("close(%d) ...\n", stream);
                 // close(inputStream);
             }
-            // if(command->outputFile){
-            // }
+            if(command->outputFile){
+                stream = open(command->outputFile, O_WRONLY | O_TRUNC | O_CREAT | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+                if(dup2(stream,1) != 1) {
+                    fprintf(stderr, "Error.");
+                    exit(1);
+                }
+
+
+
+            }
             execvp(command->arguments[0], command->arguments);
             exit(-1);
         }
