@@ -202,6 +202,11 @@ int main( int argc, char *argv[] )
         int status;
         pid_t id = fork();
         int stream;
+        // int pipefd[2] = {-1, -1};
+        // int nbytes, g, line;
+        // char is[MYSH_LINE];
+        // char os[MYSH_LINE];
+    for(int c = 0; commandSet->commands[c] == NULL; c++) {
         if(id > 0) {
             do {
             pid_t child_process_id = wait(&status); //status will be updated through wait method with what happened to the child after it finished running
@@ -210,10 +215,12 @@ int main( int argc, char *argv[] )
             }
             } while(!WIFEXITED(status) && !WIFSIGNALED(status));
             
+
+
             }
         else if (id == 0){
             // execvp(command->arguments[0], command->arguments);
-            if(command->inputFile) {
+            if(command->inputFile != NULL & command->outputFile == NULL) {
                 stream = open(command->inputFile, O_RDONLY);
                 printf("1st open() returned %d\n,", stream);
 
@@ -224,23 +231,36 @@ int main( int argc, char *argv[] )
                 // printf("close(%d) ...\n", stream);
                 // close(inputStream);
             }
-            if(command->outputFile){
+            if(command->outputFile != NULL & command->inputFile == NULL){
                 stream = open(command->outputFile, O_WRONLY | O_TRUNC | O_CREAT | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
                 if(dup2(stream,1) != 1) {
                     fprintf(stderr, "Error.");
                     exit(1);
                 }
+            }
 
-
+            if(commandSet->commands[0]) {
+                if(dup2(commandSet->commands[c]->pipeOutput, 1) != -1) {
+                    fprintf(stderr, "Error.");
+                    exit(1);
+                }
+                if(dup2(commandSet->commands[c+1]->pipeInput, 0) != -1) {
+                    fprintf(stderr, "Error.");
+                    exit(1);
+                }
 
             }
+            else {
+                exit(-1);
+                //Fork Error
+                }
+
+        }
+    }
             execvp(command->arguments[0], command->arguments);
             exit(-1);
-        }
-        else {
-            exit(-1);
-            //Fork Error
-        }
+        
+        
         printf("%d fork() returned %d. Parent's pid: %d\n", getpid(), id, getppid());
       
 
