@@ -47,6 +47,7 @@ int main( int argc, char *argv[] )
 {
     while(1) {
         // commands = getCmd();
+
         // foreach command in commands: create succeeding pipe for I/O*
         // create child process open files for I/O*
         // redirect stdin from file or preceding pipe*
@@ -94,12 +95,14 @@ int main( int argc, char *argv[] )
                 }
                 else {
                     fprintf(stdout, "Place commands into the background: after invoking the specified commands.‘&’ may only be specified as the final command line argument. %s\n", breakup[i]);
+                    commandSet->flag=1;
                 }
             }
              else if(strcmp(breakup[i], "<") == 0) {
                     fprintf(stdout, "Redirect the current command’s standard input stream from the file named immediately after the ‘<’ operator.\n");
-                    fprintf(stdout, "%s is our new input stream\n", breakup[i+1]);
-                    command->inputFile = breakup[i+1];
+                    i++;
+                    fprintf(stdout, "%s is our new input stream\n", breakup[i]);
+                    command->inputFile = breakup[i];
 
                     // FILE * inputStream = fopen(breakup[i+1], "r");
                     // fgetc(inputStream);
@@ -108,8 +111,9 @@ int main( int argc, char *argv[] )
                 }
             else if(strcmp(breakup[i], ">") == 0) {
                     fprintf(stdout, "Redirect the current command’s standard output stream to the file named immediately after the ‘>’ operator.\n");
-                    fprintf(stdout, "%s is our new output stream\n", breakup[i+1]);
-                    command->outputFile = breakup[i+1];
+                    i++;
+                    fprintf(stdout, "%s is our new output stream\n", breakup[i]);
+                    command->outputFile = breakup[i];
 
                     // FILE * inputStream = fopen(breakup[i+1], "w");
                     // fgetc(inputStream);
@@ -117,8 +121,9 @@ int main( int argc, char *argv[] )
                 }
             else if(strcmp(breakup[i], ">>") == 0) {
                     fprintf(stdout, "Redirect the current command’s standard output stream to the file named immediately after the ‘>>’ operator. Append to the file if it already exists.\n");
-                    fprintf(stdout, "%s is our new SPECIAL output stream\n", breakup[i+1]);
-                    command->inputFile = breakup[i+1];
+                    i++;
+                    fprintf(stdout, "%s is our new SPECIAL output stream\n", breakup[i]);
+                    command->inputFile = breakup[i];
                     command->appendOut = 1;
 
                 }
@@ -138,7 +143,7 @@ int main( int argc, char *argv[] )
                     commandSet->commands[commandSet->numCmds] = NULL;
 
             } else {
-                    fprintf(stdout, "Plain and boring command.\n");
+                    fprintf(stdout, "Here is the command.\n");
                     if(command->numArgs == 0) {
                         command->arguments[0] = breakup[i];
                         command->numArgs++;
@@ -153,6 +158,65 @@ int main( int argc, char *argv[] )
                 }
 
         }
+
+        for(int j=0; commandSet->commands[j]; j++){
+            fprintf(stdout,"Command #%d, ",j);
+            cmd out_command = commandSet->commands[j];
+            fprintf(stdout,"vector: ");
+            for (int k=0; out_command->arguments[k];k++){
+                fprintf(stdout,"%s ",out_command->arguments[k]);
+            }
+            if (out_command->inputFile){
+                fprintf(stdout,", input file: %s, ",out_command->inputFile);
+            } else {
+                if(out_command->pipeInput){
+                    fprintf(stdout,", input file: pipe, ");
+                } else {
+                    fprintf(stdout,", input file: stdin, ");
+                }
+            }
+            if (out_command->outputFile){
+                fprintf(stdout,"output file: %s",out_command->outputFile);
+                if(out_command->appendOut){
+                    fprintf(stdout," (append), ");
+                } else {
+                    fprintf(stdout," (new file), ");
+                }
+            } else {
+                if(out_command->pipeOutput){
+                    fprintf(stdout,"output file: pipe, ");
+                } else {
+                    fprintf(stdout,"output file: stdout, ");
+                }
+            }
+            if (commandSet->flag){
+            fprintf(stdout,"background\n");
+        } 
+            else {
+            fprintf(stdout, "foreground\n");
+        }
+
+        }
+
+        pid_t id = fork();
+        if(id > 0) {
+            int status;
+            pid_t child_process_id = wait(&status); //status will be updated through wait method with what happened to the child after it finished running
+            if(child_process_id == -1) {
+                perror("Wait didn't work.");
+            }
+            }
+        else if (id == 0){
+            execvp(command->arguments[0], command->arguments);
+            exit(-1);
+        }
+        else {
+            exit(-1);
+            //Fork Error
+        }
+        printf("%d fork() returned %d. Parent's pid: %d\n", getpid(), id, getppid());
+      
+
 
 
 
