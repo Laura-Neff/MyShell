@@ -115,7 +115,8 @@ int main( int argc, char *argv[] )
                     fprintf(stdout, "%s is our new output stream\n", breakup[i]);
                     command->outputFile = breakup[i];
 
-                    // FILE * inputStream = fopen(breakup[i+1], "w");
+                    // FILE * outputStream = fopen(command->outputFile, "w");
+                    //dup2(outputStream,1);
                     // fgetc(inputStream);
                     // fclose(inputStream);
                 }
@@ -198,15 +199,33 @@ int main( int argc, char *argv[] )
 
         }
 
+        int status;
         pid_t id = fork();
+        int inputStream;
         if(id > 0) {
-            int status;
+            do {
             pid_t child_process_id = wait(&status); //status will be updated through wait method with what happened to the child after it finished running
             if(child_process_id == -1) {
                 perror("Wait didn't work.");
             }
+            } while(!WIFEXITED(status) && !WIFSIGNALED(status));
+            
             }
         else if (id == 0){
+            // execvp(command->arguments[0], command->arguments);
+            if(command->inputFile) {
+                inputStream = open(command->inputFile, O_RDONLY);
+                printf("1st open() returned %d\n,", inputStream);
+
+                if(dup2(inputStream,0) != 0) {
+                    fprintf(stderr, "Error.");
+                    exit(1);
+                }
+                printf("close(%d) ...\n", inputStream);
+                // close(inputStream);
+            }
+            // if(command->outputFile){
+            // }
             execvp(command->arguments[0], command->arguments);
             exit(-1);
         }
