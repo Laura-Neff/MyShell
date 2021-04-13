@@ -199,69 +199,120 @@ int main( int argc, char *argv[] )
 
         }
 
-        int status;
-        pid_t id = fork();
-        int stream;
-        // int pipefd[2] = {-1, -1};
-        // int nbytes, g, line;
-        // char is[MYSH_LINE];
-        // char os[MYSH_LINE];
-    for(int c = 0; commandSet->commands[c] == NULL; c++) {
-        if(id > 0) {
-            do {
-            pid_t child_process_id = wait(&status); //status will be updated through wait method with what happened to the child after it finished running
-            if(child_process_id == -1) {
-                perror("Wait didn't work.");
+
+    for(int c = 0; commandSet->commands[c]; c++) {
+        if(commandSet->commands[c]->pipeOutput) {
+            int pipefd[2] = {-1,-1};
+            int result = pipe(pipefd);
+            if(result < 0) {
+                perror("Cannot create pipe.");
             }
-            } while(!WIFEXITED(status) && !WIFSIGNALED(status));
-            
+            commandSet->commands[c]->pipeOutput = pipefd[1];
+            commandSet->commands[c+1]->pipeInput = pipefd[0];
+        } 
+
+    }
 
 
+
+    // pid_t id = fork();
+    int stream;
+    // int pipefd[2] = {-1, -1};
+    // int nbytes, g, line;
+    // char is[MYSH_LINE];
+    // char os[MYSH_LINE];
+    for(int c = 0; commandSet->commands[c]; c++) {
+        cmd command = commandSet->commands[c];
+        pid_t pid = fork();
+        if(pid > 0) { //in the parent
+            // do {
+            // pid_t child_process_id = wait(&status); //status will be updated through wait method with what happened to the child after it finished running
+            // if(child_process_id == -1) {
+            //     perror("Wait didn't work.");
+            // }
+            // } while(!WIFEXITED(status) && !WIFSIGNALED(status));
+
+            if(command->pipeOutput) {
+                close(command->pipeOutput);
             }
-        else if (id == 0){
+            if(command->pipeInput) {
+                close(command->pipeInput);
+            }
+
+        } else if (pid == 0){ //in the child
             // execvp(command->arguments[0], command->arguments);
-            if(command->inputFile != NULL & command->outputFile == NULL) {
+            //fprintf(stdout,"Preparing command %s\n",command->arguments[0]);
+            if(command->inputFile) {
                 stream = open(command->inputFile, O_RDONLY);
                 printf("1st open() returned %d\n,", stream);
 
                 if(dup2(stream,0) != 0) {
-                    fprintf(stderr, "Error.");
+                    fprintf(stderr, "Error dup2 input file\n");
                     exit(1);
                 }
                 // printf("close(%d) ...\n", stream);
                 // close(inputStream);
             }
-            if(command->outputFile != NULL & command->inputFile == NULL){
+            if(command->outputFile){
                 stream = open(command->outputFile, O_WRONLY | O_TRUNC | O_CREAT | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
                 if(dup2(stream,1) != 1) {
-                    fprintf(stderr, "Error.");
+                    fprintf(stderr, "Error dup2 output file\n");
                     exit(1);
                 }
             }
-
-            if(commandSet->commands[0]) {
-                if(dup2(commandSet->commands[c]->pipeOutput, 1) != -1) {
-                    fprintf(stderr, "Error.");
+            if(command->pipeOutput){
+                if(dup2(command->pipeOutput, 1) == -1) {
+                    fprintf(stderr, "Error dup2 stdout, pipeOutput %d\n",command->pipeOutput);
                     exit(1);
                 }
-                if(dup2(commandSet->commands[c+1]->pipeInput, 0) != -1) {
-                    fprintf(stderr, "Error.");
-                    exit(1);
-                }
-
             }
-            else {
-                exit(-1);
-                //Fork Error
+            if(command->pipeInput){
+                if(dup2(command->pipeInput, 0) == -1) {
+                    fprintf(stderr, "Error dup2 stdin, pipeInput %d\n",command->pipeInput);
+                    exit(1);
                 }
-
-        }
-    }
+            }
+            //fprintf(stderr,"Running command %s\n",command->arguments[0]);
             execvp(command->arguments[0], command->arguments);
             exit(-1);
+        } else {
+            exit(-1);
+            //Fork Error
+            }
+
+    }
+    
+    int status;
+    pid_t id;
+    pid_t process_id = 0;
+    if(commandSet->flag) {
+        process_id = fork();
+        if(process_id > 0) {
+            printf("Ya backgrounded with the process id: %d", process_id);
+        } if(process_id < 0) {
+            perror("Sorry, you spooned instead.");
+            exit(-1);
+        }
+        //We're gonna DO something here
+    }
+    if(process_id==0){
+        do {
+            do {
+                id = wait(&status);
+                //fprintf(stdout,"Waited on %d\n",id);
+            } while(!WIFEXITED(status) && !WIFSIGNALED(status));
+        } while(id != -1);
+    }
+
+    if(commandSet->flag) {
+        if(process_id == 0){
+            exit(0);
+        }
+    }
+            
         
         
-        printf("%d fork() returned %d. Parent's pid: %d\n", getpid(), id, getppid());
+        //printf("%d fork() returned %d. Parent's pid: %d\n", getpid(), id, getppid());
       
 
 
