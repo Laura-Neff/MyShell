@@ -284,163 +284,74 @@ int main( int argc, char *argv[] )
     // char is[MYSH_LINE];
     // char os[MYSH_LINE];
     pid_t process_id = 0;
-    if(commandSet->flag) {
-        process_id = fork(); //make a background calling process
-        if(process_id > 0) { //maybe the parent should stay as the calling process and the child should take over...
-            fprintf(stdout, "Backgrounded (%d)\n", process_id);
-            for(int c = 0; commandSet->commands[c]; c++) {
-            cmd command = commandSet->commands[c];
-            pid_t pid = fork();
-            if(pid > 0) { //in the parent
-                if(command->pipeOutput) { //close parent's writing pipe after fork
-                    close(command->pipeOutput);
-                }
-                if(command->pipeInput) { //close parent's reading pipe after fork
-                    close(command->pipeInput);
-                }
+    
+    for(int c = 0; commandSet->commands[c]; c++) {
+        cmd command = commandSet->commands[c];
+        pid_t pid = fork();
+        if(pid > 0) { //in the parent
+            if(command->pipeOutput) { //close parent's writing pipe after fork
+                close(command->pipeOutput);
+            }
+            if(command->pipeInput) { //close parent's reading pipe after fork
+                close(command->pipeInput);
+            }
 
-            } else if (pid == 0){ //in the child
-                // execvp(command->arguments[0], command->arguments);
-                //fprintf(stdout,"Preparing command %s\n",command->arguments[0]);
-                if(command->inputFile) {
-                    int fin = open(command->inputFile,O_RDONLY); 
-                    if(fin==-1){
-                        perror("Error: input redirection");
-                        exit(-1);
-                    }
-                    if(dup2(fin,0)==-1){ //redirect stdin
-                        perror("Error: dup2");
-                        exit(-1);
-                    }
-                    // printf("close(%d) ...\n", stream);
-                    // close(inputStream);
+        } else if (pid == 0){ //in the child
+            // execvp(command->arguments[0], command->arguments);
+            //fprintf(stdout,"Preparing command %s\n",command->arguments[0]);
+            if(command->inputFile) {
+                int fin = open(command->inputFile,O_RDONLY); 
+                if(fin==-1){
+                    perror("Error: input redirection");
+                    exit(-1);
                 }
-                if(command->outputFile){
-                    int fout;
-                    if(command->appendOut){ //if we are just appending
-                        fout = open(command->outputFile,
-                                    O_WRONLY|O_CREAT|O_APPEND, 
-                                    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH); //redirect in child!!
-                    } else { //if we are creating a new file or exiting if one found
-                        fout = open(command->outputFile,
-                                    O_WRONLY|O_CREAT,
-                                    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-                    }
-                    if(fout==-1){
-                        perror("Error: open()");
-                        exit(-1);
-                    }
-                    if(dup2(fout,1)==-1){ //redirect stdout
-                        perror("Error: dup2()");
-                        exit(-1);
-                    } 
+                if(dup2(fin,0)==-1){ //redirect stdin
+                    perror("Error: dup2");
+                    exit(-1);
                 }
-                if(command->pipeOutput){
-                    if(dup2(command->pipeOutput, 1) == -1) {
-                        fprintf(stderr, "Error dup2 stdout, pipeOutput %d\n",command->pipeOutput);
-                        exit(1);
-                    }
+                // printf("close(%d) ...\n", stream);
+                // close(inputStream);
+            }
+            if(command->outputFile){
+                int fout;
+                if(command->appendOut){ //if we are just appending
+                    fout = open(command->outputFile,
+                                O_WRONLY|O_CREAT|O_APPEND, 
+                                S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH); //redirect in child!!
+                } else { //if we are creating a new file or exiting if one found
+                    fout = open(command->outputFile,
+                                O_WRONLY|O_CREAT,
+                                S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
                 }
-                if(command->pipeInput){
-                    if(dup2(command->pipeInput, 0) == -1) {
-                        fprintf(stderr, "Error dup2 stdin, pipeInput %d\n",command->pipeInput);
-                        exit(1);
-                    }
+                if(fout==-1){
+                    perror("Error: open()");
+                    exit(-1);
                 }
-                //fprintf(stderr,"Running command %s\n",command->arguments[0]);
-                execvp(command->arguments[0], command->arguments);
-                exit(-1);
-            } else {
-                fprintf(stderr,"Error: fork()\n");
-                exit(-1);
-                //Fork Error
+                if(dup2(fout,1)==-1){ //redirect stdout
+                    perror("Error: dup2()");
+                    exit(-1);
+                } 
+            }
+            if(command->pipeOutput){
+                if(dup2(command->pipeOutput, 1) == -1) {
+                    fprintf(stderr, "Error dup2 stdout, pipeOutput %d\n",command->pipeOutput);
+                    exit(1);
                 }
-        }
-
-        int status;
-        pid_t id;
-        do {
-            do {
-                id = wait(&status);
-                //fprintf(stdout,"Waited on %d\n",id);
-            } while(!WIFEXITED(status) && !WIFSIGNALED(status));
-        } while(id != -1);
-        exit(0); //kill the parent
-            
-        } else if(process_id < 0) {
-            fprintf(stderr,"Error: fork()\n");
+            }
+            if(command->pipeInput){
+                if(dup2(command->pipeInput, 0) == -1) {
+                    fprintf(stderr, "Error dup2 stdin, pipeInput %d\n",command->pipeInput);
+                    exit(1);
+                }
+            }
+            //fprintf(stderr,"Running command %s\n",command->arguments[0]);
+            execvp(command->arguments[0], command->arguments);
             exit(-1);
         } else {
-            continue; //return the shell
+            fprintf(stderr,"Error: fork()\n");
+            exit(-1);
+            //Fork Error
             }
-    } else {
-        for(int c = 0; commandSet->commands[c]; c++) {
-            cmd command = commandSet->commands[c];
-            pid_t pid = fork();
-            if(pid > 0) { //in the parent
-                if(command->pipeOutput) { //close parent's writing pipe after fork
-                    close(command->pipeOutput);
-                }
-                if(command->pipeInput) { //close parent's reading pipe after fork
-                    close(command->pipeInput);
-                }
-
-            } else if (pid == 0){ //in the child
-                // execvp(command->arguments[0], command->arguments);
-                //fprintf(stdout,"Preparing command %s\n",command->arguments[0]);
-                if(command->inputFile) {
-                    int fin = open(command->inputFile,O_RDONLY); 
-                    if(fin==-1){
-                        perror("Error: input redirection");
-                        exit(-1);
-                    }
-                    if(dup2(fin,0)==-1){ //redirect stdin
-                        perror("Error: dup2");
-                        exit(-1);
-                    }
-                    // printf("close(%d) ...\n", stream);
-                    // close(inputStream);
-                }
-                if(command->outputFile){
-                    int fout;
-                    if(command->appendOut){ //if we are just appending
-                        fout = open(command->outputFile,
-                                    O_WRONLY|O_CREAT|O_APPEND, 
-                                    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH); //redirect in child!!
-                    } else { //if we are creating a new file or exiting if one found
-                        fout = open(command->outputFile,
-                                    O_WRONLY|O_CREAT,
-                                    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-                    }
-                    if(fout==-1){
-                        perror("Error: open()");
-                        exit(-1);
-                    }
-                    if(dup2(fout,1)==-1){ //redirect stdout
-                        perror("Error: dup2()");
-                        exit(-1);
-                    } 
-                }
-                if(command->pipeOutput){
-                    if(dup2(command->pipeOutput, 1) == -1) {
-                        fprintf(stderr, "Error dup2 stdout, pipeOutput %d\n",command->pipeOutput);
-                        exit(1);
-                    }
-                }
-                if(command->pipeInput){
-                    if(dup2(command->pipeInput, 0) == -1) {
-                        fprintf(stderr, "Error dup2 stdin, pipeInput %d\n",command->pipeInput);
-                        exit(1);
-                    }
-                }
-                //fprintf(stderr,"Running command %s\n",command->arguments[0]);
-                execvp(command->arguments[0], command->arguments);
-                exit(-1);
-            } else {
-                fprintf(stderr,"Error: fork()\n");
-                exit(-1);
-                //Fork Error
-                }
         }
 
         int status;
@@ -451,7 +362,6 @@ int main( int argc, char *argv[] )
                 //fprintf(stdout,"Waited on %d\n",id);
             } while(!WIFEXITED(status) && !WIFSIGNALED(status));
         } while(id != -1);
-    }
 
     
 
