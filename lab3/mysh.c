@@ -213,7 +213,7 @@ int main( int argc, char *argv[] )
                         command->appendOut = 1;
                         //fprintf(stdout,"inputting from: %s\n",new_command->input);
                     } else {
-                        fprintf(stderr,"Error: No output specified.\n");
+                        fprintf(stderr,"Error: Missing filename for output redirection.\n");
                         error=1;
                         break;
                     }
