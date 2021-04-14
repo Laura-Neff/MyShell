@@ -223,7 +223,7 @@ int main( int argc, char *argv[] )
                     //fprintf(stdout, "%s is the first command's output stream to be used for the standard input stream of the succeeding command\n", breakup[i-1]);
                     //fprintf(stdout, "%s is our command that will be using the other command's output as an input\n", breakup[i+1]);
                     if (!command->arguments){
-                        fprintf(stderr,"Error: No program to pipe.\n");
+                        fprintf(stderr,"Error: Invalid null command.\n");
                         error=1;
                         break;
                     }
