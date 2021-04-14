@@ -380,7 +380,10 @@ int main( int argc, char *argv[] )
                 close(command->pipeInput);
             }
             //fprintf(stderr,"Running command %s\n",command->arguments[0]);
-            execvp(command->arguments[0], command->arguments); //last line in the child
+            int execresult;
+            do{
+                execvp(command->arguments[0], command->arguments); //last line in the child
+            } while (execresult==-1);
             exit(-1);
         } else {
             fprintf(stderr,"Error: fork()\n");
