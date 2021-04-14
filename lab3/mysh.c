@@ -21,7 +21,7 @@
 
 typedef struct CmdSet {
     struct Cmd ** commands;
-    int flag;
+    int background;
     int numCmds;
 
 } * cmdset;
@@ -38,7 +38,63 @@ typedef struct CmdSet {
 
 } * cmd;
 
-pid_t kill_list[1024];
+typedef struct freelistnode {
+    struct freelistnode *flink; //pointer to next free chunk node
+    pid_t process_id; //size of current chunk
+} * FreeListNode;
+
+FreeListNode head;
+
+void insert_node(FreeListNode n){
+    FreeListNode temp = head; //background to check last node
+    n->flink = 0; //clear out flink just in case
+    if(head == 0) {
+        head = n;
+        return;
+    }
+    else {
+        if(n < head){
+            n->flink = head; //Make n's flink point to head
+            head = n;
+        return;
+        }
+
+        while(temp->flink != 0){ //List traversal
+            if(n < temp->flink){
+                n->flink = temp->flink;
+                temp->flink = n;
+            return;
+            }
+            temp = temp->flink;
+        }
+        temp->flink = n;
+        return;
+        //find last node
+        //make last node next new node
+    }
+
+}
+
+void remove_node(pid_t n) {
+
+    if (head->process_id==n){ //if the head node is the one to remove
+        head = head->flink;
+        return;
+    }
+
+    FreeListNode temp = head; //for iterating over the list
+    while(temp->flink != 0){ //List traversal: check middle nodes and last node
+        if(temp->flink->process_id == n){ //if the next node (including the last node) is the one to remove
+            temp->flink = temp->flink->flink; //jump over the next node in the linked list
+            return;
+        }
+        temp = temp->flink; //else, continue to the next node
+    }
+    return;
+
+}
+
+// pid_t kill_list[1024];
 
 int main( int argc, char *argv[] )
 {
@@ -92,7 +148,7 @@ int main( int argc, char *argv[] )
                 }
                 else {
                     //fprintf(stdout, "Place commands into the background: after invoking the specified commands.‘&’ may only be specified as the final command line argument. %s\n", breakup[i]);
-                    commandSet->flag=1;
+                    commandSet->background=1;
                 }
             } else if(strcmp(breakup[i], "<") == 0) {
                     //fprintf(stdout, "Redirect the current command’s standard input stream from the file named immediately after the ‘<’ operator.\n");
@@ -221,7 +277,7 @@ int main( int argc, char *argv[] )
                     fprintf(stdout,"output file: stdout, ");
                 }
             }
-            if (commandSet->flag){
+            if (commandSet->background){
             fprintf(stdout,"background\n");
         } 
             else {
@@ -279,6 +335,7 @@ int main( int argc, char *argv[] )
 
     // pid_t id = fork();
     int stream;
+    int status;
     // int pipefd[2] = {-1, -1};
     // int nbytes, g, line;
     // char is[MYSH_LINE];
@@ -296,9 +353,17 @@ int main( int argc, char *argv[] )
                 close(command->pipeInput);
             }
 
+        if(!commandSet->background){
+            FreeListNode newNode = malloc(sizeof(struct freelistnode));
+            newNode->process_id = pid;
+            newNode->flink = NULL;
+            insert_node(newNode);
+        }
+
         } else if (pid == 0){ //in the child
             // execvp(command->arguments[0], command->arguments);
             //fprintf(stdout,"Preparing command %s\n",command->arguments[0]);
+
             if(command->inputFile) {
                 int fin = open(command->inputFile,O_RDONLY); 
                 if(fin==-1){
@@ -345,7 +410,7 @@ int main( int argc, char *argv[] )
                 }
             }
             //fprintf(stderr,"Running command %s\n",command->arguments[0]);
-            execvp(command->arguments[0], command->arguments);
+            execvp(command->arguments[0], command->arguments); //last line in the child
             exit(-1);
         } else {
             fprintf(stderr,"Error: fork()\n");
@@ -354,16 +419,30 @@ int main( int argc, char *argv[] )
             }
         }
 
-        int status;
-        pid_t id;
-        do {
-            do {
-                id = wait(&status);
-                //fprintf(stdout,"Waited on %d\n",id);
-            } while(!WIFEXITED(status) && !WIFSIGNALED(status));
-        } while(id != -1);
 
-    
+     
+
+    while(head != NULL) {
+        process_id = wait3(&status, WNOHANG, NULL);
+        if(process_id > 0){
+            remove_node(process_id);
+        } else if (process_id == -1) {
+            break;
+        } 
+
+    }
+
+
+
+        // int status;
+        // pid_t id;
+        // do {
+        //     do {
+        //         id = wait(&status);
+        //         //fprintf(stdout,"Waited on %d\n",id);
+        //     } while(!WIFEXITED(status) && !WIFSIGNALED(status));
+        // } while(id != -1);
+
 
     free(linebuf);
     free_tokens(breakup);
