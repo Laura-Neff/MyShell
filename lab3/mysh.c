@@ -277,7 +277,7 @@ int main( int argc, char *argv[] )
             }
             if (commandSet->commands[c+1]){ //if there is a next command
                 if(!commandSet->commands[c+1]->pipeInput){ //if the next command's pipeinput is not set, should not happen
-                    fprintf(stderr,"Error: Destination not set to accept pipe. Additionally, commands not parsed correctly!\n");
+                    fprintf(stderr,"Error: Destination not set to accept pipe.\n");
                     error=1;
                     break;
                 } else if (!commandSet->commands[c+1]->arguments[0]){
@@ -292,7 +292,7 @@ int main( int argc, char *argv[] )
                     commandSet->commands[c+1]->pipeInput = pipefds[0]; //set pipe it is reading from 
                 }
             } else { //there is no next command, should not happen
-                fprintf(stderr,"Error: No destination for pipe. Additionally, commands not parsed correctly!\n");
+                fprintf(stderr,"Error: No destination for pipe.\n");
                 error=1;
                 break;
             }
