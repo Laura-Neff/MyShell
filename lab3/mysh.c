@@ -342,6 +342,7 @@ int main( int argc, char *argv[] )
                     perror("Error: dup2");
                     exit(-1);
                 }
+                close(fin);
             }
             if(command->outputFile){
                 int fout;
@@ -361,19 +362,22 @@ int main( int argc, char *argv[] )
                 if(dup2(fout,1)==-1){ //redirect stdout
                     perror("Error: dup2()");
                     exit(-1);
-                } 
+                }
+                close(fout);
             }
             if(command->pipeOutput){
                 if(dup2(command->pipeOutput, 1) == -1) {
                     fprintf(stderr, "Error dup2 stdout, pipeOutput %d\n",command->pipeOutput);
                     exit(1);
                 }
+                close(command->pipeOutput);
             }
             if(command->pipeInput){
                 if(dup2(command->pipeInput, 0) == -1) {
                     fprintf(stderr, "Error dup2 stdin, pipeInput %d\n",command->pipeInput);
                     exit(1);
                 }
+                close(command->pipeInput);
             }
             //fprintf(stderr,"Running command %s\n",command->arguments[0]);
             execvp(command->arguments[0], command->arguments); //last line in the child
