@@ -388,7 +388,9 @@ int main( int argc, char *argv[] )
 
      
 
-    while(head != NULL) {
+    while(head != NULL) { //there should always be one process in the foreground on the list; this allows us to remove zombies periodically
+                        // because wait returns processes in any order, and sometimes we catch the zombies first before getting to the foreground
+                        // processes
         process_id = wait3(&status, WNOHANG, NULL);
         if(process_id > 0){
             remove_node(process_id);
@@ -396,7 +398,7 @@ int main( int argc, char *argv[] )
             head = NULL;
             break;
         } 
-
+        usleep(10000); //lower the CPU usage for checking for process termination
     }
 
 
