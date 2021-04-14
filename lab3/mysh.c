@@ -328,7 +328,7 @@ int main( int argc, char *argv[] )
             if(command->inputFile) {
                 int fin = open(command->inputFile,O_RDONLY); 
                 if(fin==-1){
-                    perror("Error: input redirection");
+                    fprintf(stderr, "Error: open(\"%s\"): %s\n", command->inputFile, strerror(errno));
                     exit(-1);
                 }
                 if(dup2(fin,0)==-1){ //redirect stdin
@@ -348,7 +348,7 @@ int main( int argc, char *argv[] )
                                 S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
                 }
                 if(fout==-1){
-                    perror("Error: open()");
+                    fprintf(stderr, "Error: open(\"%s\"): %s\n", command->outputFile, strerror(errno));
                     exit(-1);
                 }
                 if(dup2(fout,1)==-1){ //redirect stdout
