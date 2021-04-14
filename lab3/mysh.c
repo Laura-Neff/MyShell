@@ -126,7 +126,11 @@ int main( int argc, char *argv[] )
             exit(-1);
         }
 
-        char * result = fgets(linebuf, MYSH_LINE, stdin); //reads one line from input
+        char * result;
+        errno = 0;
+        do{
+            result = fgets(linebuf, MYSH_LINE, stdin); //reads one line from input
+        } while ((result==NULL)&&(errno==EINTR));
         //fgets returns 0 when it's at the end of a file or there was an error
         //fgets(string being read and stored (linebuf is being stored from stdin, max number of characters to be read, file stream that identifies where characters are read from)
 
@@ -441,15 +445,6 @@ int main( int argc, char *argv[] )
     }
 
 
-
-        // int status;
-        // pid_t id;
-        // do {
-        //     do {
-        //         id = wait(&status);
-        //         //fprintf(stdout,"Waited on %d\n",id);
-        //     } while(!WIFEXITED(status) && !WIFSIGNALED(status));
-        // } while(id != -1);
 
 
     free(linebuf);
