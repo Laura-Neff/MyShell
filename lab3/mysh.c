@@ -301,13 +301,8 @@ int main( int argc, char *argv[] )
     }
     if (error) continue; //just bring back the prompt if there was an error anywhere in the process
 
-    // pid_t id = fork();
     int stream;
     int status;
-    // int pipefd[2] = {-1, -1};
-    // int nbytes, g, line;
-    // char is[MYSH_LINE];
-    // char os[MYSH_LINE];
     pid_t process_id = 0;
     
     for(int c = 0; commandSet->commands[c]; c++) {
@@ -329,8 +324,6 @@ int main( int argc, char *argv[] )
         }
 
         } else if (pid == 0){ //in the child
-            // execvp(command->arguments[0], command->arguments);
-            //fprintf(stdout,"Preparing command %s\n",command->arguments[0]);
 
             if(command->inputFile) {
                 int fin = open(command->inputFile,O_RDONLY); 
@@ -342,8 +335,6 @@ int main( int argc, char *argv[] )
                     perror("Error: dup2");
                     exit(-1);
                 }
-                // printf("close(%d) ...\n", stream);
-                // close(inputStream);
             }
             if(command->outputFile){
                 int fout;
