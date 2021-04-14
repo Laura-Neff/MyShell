@@ -13,6 +13,7 @@
 #include <errno.h> //for the errno checking
 #include <fcntl.h> //for O_CONSTANTS
 #include <string.h> //fprintf, etc.
+#include <signal.h> //for kill
 
 #include "tokens.h" //custom tokenizer made for the class
 
@@ -138,7 +139,15 @@ int main( int argc, char *argv[] )
         //fgets(string being read and stored (linebuf is being stored from stdin, max number of characters to be read, file stream that identifies where characters are read from)
 
         if((!result)||(strcmp(linebuf, "exit\n")==0)){ //if we got ctrl-D as input (EOF), or user typed in exit, quit
+            pid_t kill_id;
+            int status;
             fprintf(stdout, "Goodbye!\n");
+            do{
+                kill_id = wait3(&status, WNOHANG, NULL);
+                if (kill_id > 0){
+                    kill(kill_id,SIGTERM); //kill all background processes politely
+                }
+            } while(kill_id!=-1);
             return 0;
         }
 
