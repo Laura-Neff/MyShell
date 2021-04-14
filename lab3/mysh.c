@@ -281,11 +281,11 @@ int main( int argc, char *argv[] )
                     error=1;
                     break;
                 } else if (!commandSet->commands[c+1]->arguments[0]){
-                    fprintf(stderr,"Error: No destination for pipe.\n");
+                    fprintf(stderr,"Error: Invalid null command.\n");
                     error=1;
                     break;
                 } else if (commandSet->commands[c+1]->inputFile){
-                    fprintf(stderr,"Error: Cannot redirect from input file and pipe simultaneously.\n");
+                    fprintf(stderr,"Error: Ambiguous input redirection.\n");
                     error=1;
                     break;
                 } else {
