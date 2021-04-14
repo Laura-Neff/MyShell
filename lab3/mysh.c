@@ -169,7 +169,7 @@ int main( int argc, char *argv[] )
                     i++; //increment i to the next token
                     //fprintf(stdout, "%s is our new input stream\n", breakup[i]);
                     if (command->inputFile){
-                        fprintf(stderr,"Error: Input already specified.\n");
+                        fprintf(stderr,"Error: Ambiguous input redirection.\n");
                         error=1;
                         break;
                     }
@@ -177,7 +177,7 @@ int main( int argc, char *argv[] )
                         command->inputFile = breakup[i];
                         //fprintf(stdout,"inputting from: %s\n",new_command->input);
                     } else {
-                        fprintf(stderr,"Error: No input specified.\n");
+                        fprintf(stderr,"Error: Missing filename for input redirection.\n");
                         error=1;
                         break;
                     }
