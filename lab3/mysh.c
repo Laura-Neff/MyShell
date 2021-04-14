@@ -110,8 +110,15 @@ int main( int argc, char *argv[] )
         // parent waits for foreground children*
 
         int error = 0;
-
-        fprintf(stdout, "mysh: ");
+        if(argc>1){
+            if(!strcmp(argv[1],"-")){
+                fprintf(stdout, ""); //don't print a prompt
+            } else {
+                fprintf(stdout, "%s ",argv[1]);
+            }
+        } else {
+            fprintf(stdout, "mysh: ");
+        }
 
         char *linebuf = malloc(sizeof(char) * (MYSH_LINE));
         if(!linebuf) {
@@ -427,6 +434,7 @@ int main( int argc, char *argv[] )
         if(process_id > 0){
             remove_node(process_id);
         } else if (process_id == -1) {
+            head = NULL;
             break;
         } 
 
