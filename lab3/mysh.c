@@ -111,7 +111,7 @@ int main( int argc, char *argv[] )
 
         int error = 0;
 
-        fprintf(stdout, "Here lies my hopes and dreams:: ");
+        fprintf(stdout, "mysh: ");
 
         char *linebuf = malloc(sizeof(char) * (MYSH_LINE));
         if(!linebuf) {
