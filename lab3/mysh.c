@@ -260,11 +260,11 @@ int main( int argc, char *argv[] )
         if(command->pipeOutput){ //this means that this will pipe out
             int pipefds[2] = {-1,-1}; //init new array for pipe file descriptors
             if(!command->arguments[0]) {
-                fprintf(stderr,"Error: No source for pipe.\n");
+                fprintf(stderr,"Error: Invalid null command.\n");
                 error=1;
                 break;
             } else if(command->outputFile){
-                fprintf(stderr,"Error: Cannot redirect to file and pipe simultaneously.\n");
+                fprintf(stderr,"Error: Ambiguous output redirection.\n");
                 error=1;
                 break;
             } else {
