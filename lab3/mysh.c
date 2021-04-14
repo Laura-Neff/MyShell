@@ -153,7 +153,7 @@ int main( int argc, char *argv[] )
             //fprintf(stdout, "My tokens: %s\n", breakup[i]);
             if(strcmp(breakup[i], "&") == 0) {
                 if(breakup[i+1] != NULL) {
-                    fprintf(stderr, "Error: background must be last character\n");
+                    fprintf(stderr, "Error: \"&\" must be last token on command line\n");
                     error=1;
                     break;
                 }
