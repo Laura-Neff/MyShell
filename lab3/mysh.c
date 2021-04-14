@@ -401,8 +401,6 @@ int main( int argc, char *argv[] )
     for (int i=0; commandSet->commands[i]; i++){
         command = commandSet->commands[i];
         if(command->arguments) free(command->arguments);
-        //if(command->inputFile) free(command->inputFile);
-        //if(command->outputFile) free(command->outputFile);
         free(command);
     }
     free(commandSet);
