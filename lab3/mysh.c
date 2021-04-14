@@ -192,13 +192,6 @@ int main( int argc, char *argv[] )
                         break;
                     }
                     if (breakup[i]){
-                        struct stat buf;
-                        int exists = lstat(breakup[i],&buf);
-                        if (exists >= 0){
-                            fprintf(stderr, "Error: output file exists.\n");
-                            error = 1;
-                            break;
-                        }
                         command->outputFile = breakup[i];
                         //fprintf(stdout,"inputting from: %s\n",new_command->input);
                     } else {
@@ -211,7 +204,7 @@ int main( int argc, char *argv[] )
                     i++;
                     //fprintf(stdout, "%s is our new SPECIAL output stream\n", breakup[i]);
                     if (command->outputFile){
-                        fprintf(stderr,"Error: Output already specified.\n");
+                        fprintf(stderr,"Error: Ambiguous output redirection.\n");
                         error=1;
                         break;
                     }
@@ -399,7 +392,7 @@ int main( int argc, char *argv[] )
                                 S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH); //redirect in child!!
                 } else { //if we are creating a new file or exiting if one found
                     fout = open(command->outputFile,
-                                O_WRONLY|O_CREAT,
+                                O_CREAT,
                                 S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
                 }
                 if(fout==-1){
