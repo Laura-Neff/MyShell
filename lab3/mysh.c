@@ -253,46 +253,7 @@ int main( int argc, char *argv[] )
                 }
 
         }
-        /*
-        for(int j=0; commandSet->commands[j]; j++){
-            fprintf(stdout,"Command #%d, ",j);
-            cmd out_command = commandSet->commands[j];
-            fprintf(stdout,"vector: ");
-            for (int k=0; out_command->arguments[k];k++){
-                fprintf(stdout,"%s ",out_command->arguments[k]);
-            }
-            if (out_command->inputFile){
-                fprintf(stdout,", input file: %s, ",out_command->inputFile);
-            } else {
-                if(out_command->pipeInput){
-                    fprintf(stdout,", input file: pipe, ");
-                } else {
-                    fprintf(stdout,", input file: stdin, ");
-                }
-            }
-            if (out_command->outputFile){
-                fprintf(stdout,"output file: %s",out_command->outputFile);
-                if(out_command->appendOut){
-                    fprintf(stdout," (append), ");
-                } else {
-                    fprintf(stdout," (new file), ");
-                }
-            } else {
-                if(out_command->pipeOutput){
-                    fprintf(stdout,"output file: pipe, ");
-                } else {
-                    fprintf(stdout,"output file: stdout, ");
-                }
-            }
-            if (commandSet->background){
-            fprintf(stdout,"background\n");
-        } 
-            else {
-            fprintf(stdout, "foreground\n");
-        }
-
-        }
-        */
+        
 
     for(int c = 0; commandSet->commands[c]; c++) {
         cmd command = commandSet->commands[c];
