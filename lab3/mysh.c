@@ -110,14 +110,17 @@ int main( int argc, char *argv[] )
         // parent waits for foreground children*
 
         int error = 0;
-        if(argc>1){
+        if(argc==2){
             if(!strcmp(argv[1],"-")){
                 fprintf(stdout, ""); //don't print a prompt
             } else {
                 fprintf(stdout, "%s ",argv[1]);
             }
-        } else {
+        } else if (argc==1) {
             fprintf(stdout, "mysh: ");
+        } else {
+            fprintf(stderr,"Error: Usage: %s [prompt]\n", argv[0]);
+            exit(-1);
         }
 
         char *linebuf = malloc(sizeof(char) * (MYSH_LINE));
