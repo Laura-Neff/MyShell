@@ -187,7 +187,7 @@ int main( int argc, char *argv[] )
                     i++; //increment i to the next token
                     //fprintf(stdout, "%s is our new output stream\n", breakup[i]);
                     if (command->outputFile){
-                        fprintf(stderr,"Error: Output already specified.\n");
+                        fprintf(stderr,"Error: Ambiguous output redirection.\n");
                         error=1;
                         break;
                     }
